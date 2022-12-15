@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Box,
     FormControl,
@@ -34,7 +34,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { styled } from "@mui/system";
 
-import { useSaveProfileMutation } from "./services/condidateProfileApi";
+import { useSaveProfileMutation, useGetResumeProfileQuery } from "./services/condidateProfileApi";
 
 function App() {
     const [name, setName] = useState("");
@@ -45,6 +45,7 @@ function App() {
     const [jobLocation, setJobLocation] = useState([]);
     const [profileImage, setProfileImage] = useState("");
     const [resume, setResume] = useState("");
+    const [condidates, setCondidates] = useState([]);
 
     const [error, setError] = useState({
         status: false,
@@ -52,7 +53,17 @@ function App() {
         type: "",
     });
 
+    // RTK Query
     const [saveProfile] = useSaveProfileMutation();
+    const { data, isSuccess } = useGetResumeProfileQuery();
+
+    useEffect(() => {
+        if (data && isSuccess) {
+            setCondidates(data.condidates);
+        }
+    }, [data, isSuccess]);
+
+    console.log(data);
 
     const resetForm = () => {
         setName("");
@@ -294,17 +305,21 @@ function App() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                                    <TableCell align="center">Arunesh kumar</TableCell>
-                                    <TableCell align="center">arunesh@gmail.com</TableCell>
-                                    <TableCell align="center">20/07/1999</TableCell>
-                                    <TableCell align="center">Bihar</TableCell>
-                                    <TableCell align="center">Male</TableCell>
-                                    <TableCell align="center">Bangalore, Delhi</TableCell>
-                                    <TableCell align="center">
-                                        <Avatar src="#" />
-                                    </TableCell>
-                                </TableRow>
+                                {condidates.map((condidate, index) => {
+                                    return (
+                                        <TableRow key={index} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+                                            <TableCell align="center">{condidate.name}</TableCell>
+                                            <TableCell align="center">{condidate.email}</TableCell>
+                                            <TableCell align="center">{condidate.dob}</TableCell>
+                                            <TableCell align="center">{condidate.state}</TableCell>
+                                            <TableCell align="center">{condidate.gender}</TableCell>
+                                            <TableCell align="center">{condidate.location}</TableCell>
+                                            <TableCell align="center">
+                                                <Avatar src={`http://127.0.0.1:8000/.${condidate.pimage}`} />
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </TableContainer>

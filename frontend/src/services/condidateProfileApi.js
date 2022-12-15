@@ -13,7 +13,15 @@ export const condidateProfileApi = createApi({
                 };
             },
         }),
+        getResumeProfile: builder.query({
+            query: () => {
+                return {
+                    url: "list/",
+                    method: "GET",
+                };
+            },
+        }),
     }),
 });
 
-export const { useSaveProfileMutation } = condidateProfileApi;
+export const { useSaveProfileMutation, useGetResumeProfileQuery } = condidateProfileApi;
