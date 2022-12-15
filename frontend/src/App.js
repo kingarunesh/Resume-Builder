@@ -22,17 +22,19 @@ import {
     FormControlLabel,
     FormGroup,
     Stack,
-    Input,
     Button,
     Checkbox,
     Alert,
 } from "@mui/material";
+import { format } from "date-fns";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { styled } from "@mui/system";
+
+import { useSaveProfileMutation } from "./services/condidateProfileApi";
 
 function App() {
     const [name, setName] = useState("");
@@ -49,6 +51,8 @@ function App() {
         msg: "",
         type: "",
     });
+
+    const [saveProfile] = useSaveProfileMutation();
 
     const resetForm = () => {
         setName("");
@@ -71,26 +75,44 @@ function App() {
         display: "none",
     });
 
-    const handleSubmit = (e) => {
+    function formatDate(date) {
+        var d = new Date(date),
+            month = "" + (d.getMonth() + 1),
+            day = "" + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = "0" + month;
+        if (day.length < 2) day = "0" + day;
+
+        return [year, month, day].join("-");
+    }
+
+    // console.log(formatDate("Sun May 11,2014"));
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const data = new FormData();
 
-        data.append("name", "name");
-        data.append("email", "email");
-        data.append("dob", "dob");
-        data.append("st", "st");
-        data.append("gender", "gender");
-        data.append("jobLocation", "jobLocation");
-        data.append("profileImage", "profileImage");
-        data.append("resume", "resume");
+        data.append("name", name);
+        data.append("email", email);
+        // data.append("dob", dob == null ? null : format(dob, "yyyy-MM-dd"));
+        // data.append("dob", dob);
+        data.append("dob", dob == null ? null : formatDate(dob));
+        data.append("state", st);
+        data.append("gender", gender);
+        data.append("location", jobLocation);
+        data.append("pimage", profileImage);
+        data.append("rdoc", resume);
 
         if (name && email) {
-            console.log(data.get("name"));
-            console.log(data.get("email"));
-            setError({ status: true, msg: "Resume uploaded successfully", type: "success" });
-            resetForm();
-            document.getElementById("resume-form").reset();
+            const res = await saveProfile(data);
+
+            if (res.data.status === "success") {
+                setError({ status: true, msg: "Resume uploaded successfully", type: "success" });
+                resetForm();
+                document.getElementById("resume-form").reset();
+            }
         } else {
             setError({ status: true, msg: "All fields are required", type: "error" });
         }
@@ -147,9 +169,10 @@ function App() {
                         <FormControl fullWidth margin="normal">
                             <InputLabel id="state-select-label">State</InputLabel>
                             <Select labelId="state-select-label" id="select-state" value={st} onChange={(e) => setSt(e.target.value)}>
+                                <MenuItem value="Bihar">Bihar</MenuItem>
                                 <MenuItem value="Delhi">Delhi</MenuItem>
-                                <MenuItem value="Odisa">Odisa</MenuItem>
-                                <MenuItem value="Karnataka">Karnataka</MenuItem>
+                                <MenuItem value="Noida">Noida</MenuItem>
+                                <MenuItem value="Bangalore">Bangalore</MenuItem>
                             </Select>
                         </FormControl>
 
